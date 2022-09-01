@@ -106,6 +106,7 @@
    headers=[("x-wanted-language", "en")],
    )
 
+---------------
 # 요구사항 분석에 따른 설계
 
 ### [주로 사용되는 데이터]
@@ -147,6 +148,6 @@
 ### [POST, PUT, DELETE api들도 처리후 결과를 return해서 보여주어야 함]
 => request body를 들고 있다가 return해줄때 response로 넣어주어야 함
 
-
+---------------
 # 구축순서
 * TestControllerTest 클래스에서 TDD를 해가며 완료후 본패키지로 이동 방식 적용
