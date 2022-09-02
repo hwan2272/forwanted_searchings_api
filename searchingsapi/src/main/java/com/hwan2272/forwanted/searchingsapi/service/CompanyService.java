@@ -60,14 +60,14 @@ public class CompanyService extends CommonService {
     }
 
     public List<ResponseVO> convertCompEntityToResponseVO(
-            String requestLanguage, CompanyEntity ce) {
+            String requestLanguage, CompanyEntity ce) throws Exception {
         List<CompanyEntity> ceList = new ArrayList<>();
         ceList.add(ce);
         return this.convertCompEntityToResponseVO(requestLanguage, ceList);
     }
 
     public List<ResponseVO> convertCompEntityToResponseVO(
-            String requestLanguage, List<CompanyEntity> ceList) {
+            String requestLanguage, List<CompanyEntity> ceList) throws Exception {
         List<ResponseVO> resList = new ArrayList<>();
         for(CompanyEntity ce : ceList) {
             ResponseVO resVO = new ResponseVO();
@@ -85,7 +85,7 @@ public class CompanyService extends CommonService {
                                         ce.getCompanyKo() : ce.getCompanyJa() : ce.getCompanyEn());
                 resVO.setTags(Arrays.asList(ce.getTag().replaceAll(LanguageEnum.tagKo.getName(), LanguageEnum.tagEn.getName()).split("\\|")));
             }
-            else if(requestLanguage.equals(LanguageEnum.ja.getName())) {
+            else if(requestLanguage.equals(LanguageEnum.ja.getName()) || requestLanguage.equals(LanguageEnum.jp.getName())) {
                 resVO.setCompany_name(
                         ce.getCompanyJa().isEmpty() ?
                                 ce.getCompanyKo().isEmpty() ?
@@ -102,7 +102,7 @@ public class CompanyService extends CommonService {
         return resList;
     }
 
-    public CompanyEntity convertRequestVOToCompEntity(RequestVO reqVO) {
+    public CompanyEntity convertRequestVOToCompEntity(RequestVO reqVO) throws Exception {
         CompanyEntity ce = new CompanyEntity();
         CompanyExtendEntity cee = new CompanyExtendEntity();
 
@@ -118,7 +118,7 @@ public class CompanyService extends CommonService {
                 else if (lang.equals(LanguageEnum.en.getName())) {
                     ce.setCompanyEn(companyMap.get(lang));
                 }
-                else if (lang.equals(LanguageEnum.ja.getName())) {
+                else if (lang.equals(LanguageEnum.ja.getName()) || lang.equals(LanguageEnum.jp.getName())) {
                     ce.setCompanyJa(companyMap.get(lang));
                 }
                 else {
@@ -141,7 +141,10 @@ public class CompanyService extends CommonService {
             Iterator<String> tagIter = tagMap.keySet().iterator();
             while (tagIter.hasNext()) {
                 String lang = tagIter.next();
-                if (lang.equals(LanguageEnum.ko.getName()) || lang.equals(LanguageEnum.en.getName()) || lang.equals(LanguageEnum.ja.getName())) {
+                if (lang.equals(LanguageEnum.ko.getName())
+                        || lang.equals(LanguageEnum.en.getName())
+                        || lang.equals(LanguageEnum.ja.getName())
+                        || lang.equals(LanguageEnum.jp.getName())) {
                     if (lang.equals(LanguageEnum.ko.getName())) {
                         tagSets.add(tagMap.get(lang).toString());
 
@@ -162,7 +165,7 @@ public class CompanyService extends CommonService {
         return ce;
     }
 
-    public CompanyEntity convertTagRequestVOToCompEntity(List<Map<String, Map<String, String>>> reqList) {
+    public CompanyEntity convertTagRequestVOToCompEntity(List<Map<String, Map<String, String>>> reqList) throws Exception {
         CompanyEntity ce = new CompanyEntity();
         CompanyExtendEntity cee = new CompanyExtendEntity();
 
@@ -173,7 +176,10 @@ public class CompanyService extends CommonService {
             Iterator<String> tagIter = tagMap.keySet().iterator();
             while (tagIter.hasNext()) {
                 String lang = tagIter.next();
-                if (lang.equals(LanguageEnum.ko.getName()) || lang.equals(LanguageEnum.en.getName()) || lang.equals(LanguageEnum.ja.getName())) {
+                if (lang.equals(LanguageEnum.ko.getName())
+                        || lang.equals(LanguageEnum.en.getName())
+                        || lang.equals(LanguageEnum.ja.getName())
+                        || lang.equals(LanguageEnum.jp.getName())) {
                     if (lang.equals(LanguageEnum.ko.getName())) {
                         tagSets.add(tagMap.get(lang).toString());
 

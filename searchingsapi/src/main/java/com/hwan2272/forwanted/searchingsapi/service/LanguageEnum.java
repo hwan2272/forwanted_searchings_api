@@ -4,6 +4,7 @@ public enum LanguageEnum {
     ko("ko"),
     en("en"),
     ja("ja"),
+    jp("jp"),
     tagKo("태그"),
     tagEn("tag"),
     tagJa("タグ");

@@ -25,20 +25,12 @@ public class CompanyController {
     @GetMapping("/search")
     public ResponseEntity company_search_like(
             @RequestHeader("x-wanted-language") String requestLanguage,
-            @RequestParam String query) {
+            @RequestParam String query) throws Exception {
         Map<String, Object> returnMap = new LinkedHashMap<>();
 
         //공통 헤더 체크
         if (!requestLanguage.isEmpty()) {
-            List<CompanyEntity> ceList = new ArrayList<>();
-
-            try {
-                ceList = companyService.searchComp("like", query);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(null);
-            }
+            List<CompanyEntity> ceList = companyService.searchComp("like", query);
 
             //리턴 리스폰스
             List<ResponseVO> resList =  companyService.convertCompEntityToResponseVO(requestLanguage, ceList);
@@ -54,20 +46,12 @@ public class CompanyController {
     @GetMapping("/companies/{compName}")
     public ResponseEntity company_search_equals(
             @RequestHeader("x-wanted-language") String requestLanguage,
-            @PathVariable String compName) {
+            @PathVariable String compName) throws Exception {
         Map<String, Object> returnMap = new LinkedHashMap<>();
 
         //공통 헤더 체크
         if (!requestLanguage.isEmpty()) {
-            List<CompanyEntity> ceList = new ArrayList<>();
-
-            try {
-                ceList = companyService.searchComp("equals", compName);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(null);
-            }
+            List<CompanyEntity> ceList = companyService.searchComp("equals", compName);
 
             //리턴 리스폰스
             List<ResponseVO> resList =  companyService.convertCompEntityToResponseVO(requestLanguage, ceList);
@@ -83,22 +67,16 @@ public class CompanyController {
     @PostMapping("/companies")
     public ResponseEntity company_add(
             @RequestHeader("x-wanted-language") String requestLanguage,
-            @RequestBody RequestVO reqVO) {
+            @RequestBody RequestVO reqVO) throws Exception {
         Map<String, Object> returnMap = new LinkedHashMap<>();
 
         //공통 헤더 체크
         if (!requestLanguage.isEmpty()) {
             CompanyEntity ce = companyService.convertRequestVOToCompEntity(reqVO);
-            try {
-                ce = companyService.addComp(ce);
-                if(!ObjectUtils.isEmpty(ce.getCompanyExtendEntity())) {
-                    ce.getCompanyExtendEntity().setCompSeq(ce.getSeq());
-                    companyService.addCompExt(ce);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(null);
+            ce = companyService.addComp(ce);
+            if(!ObjectUtils.isEmpty(ce.getCompanyExtendEntity())) {
+                ce.getCompanyExtendEntity().setCompSeq(ce.getSeq());
+                companyService.addCompExt(ce);
             }
 
             //리턴 리스폰스
@@ -115,20 +93,12 @@ public class CompanyController {
     @GetMapping("/tags")
     public ResponseEntity tag_search(
             @RequestHeader("x-wanted-language") String requestLanguage,
-            @RequestParam String query) {
+            @RequestParam String query) throws Exception {
         Map<String, Object> returnMap = new LinkedHashMap<>();
 
         //공통 헤더 체크
         if (!requestLanguage.isEmpty()) {
-            List<CompanyEntity> ceList = new ArrayList<>();
-
-            try {
-                ceList = companyService.searchTag(query);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(null);
-            }
+            List<CompanyEntity> ceList = companyService.searchTag(query);
 
             //리턴 리스폰스
             List<ResponseVO> resList =  companyService.convertCompEntityToResponseVO(requestLanguage, ceList);
@@ -145,18 +115,12 @@ public class CompanyController {
     public ResponseEntity tag_add(
             @RequestHeader("x-wanted-language") String requestLanguage,
             @PathVariable String compName,
-            @RequestBody String reqVO) {
+            @RequestBody String reqVO) throws Exception {
         Map<String, Object> returnMap = new LinkedHashMap<>();
 
         //공통 헤더 체크
         if (!requestLanguage.isEmpty()) {
-            List<CompanyEntity> ceList = new ArrayList<>();
-
-            try {
-                ceList = companyService.searchComp("equals", compName);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            List<CompanyEntity> ceList = companyService.searchComp("equals", compName);
 
             CompanyEntity ce = ceList.get(0);
             Set<String> sets = new LinkedHashSet<>(Arrays.asList(ce.getTag().split("\\|")));
@@ -175,16 +139,11 @@ public class CompanyController {
 
             String tagString = companyService.convertSetsToTag(sets);
             ce.setTag(tagString);
-            try {
-                ce = companyService.addComp(ce);
-                if(!ObjectUtils.isEmpty(ce.getCompanyExtendEntity())) {
-                    ce.getCompanyExtendEntity().setCompSeq(ce.getSeq());
-                    companyService.addCompExt(ce);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(null);
+            ce.setCompanyExtendEntity(convertCe.getCompanyExtendEntity());
+            ce = companyService.addComp(ce);
+            if(!ObjectUtils.isEmpty(ce.getCompanyExtendEntity())) {
+                ce.getCompanyExtendEntity().setCompSeq(ce.getSeq());
+                companyService.addCompExt(ce);
             }
 
             //리턴 리스폰스
@@ -202,18 +161,13 @@ public class CompanyController {
     public ResponseEntity tag_delete(
             @RequestHeader("x-wanted-language") String requestLanguage,
             @PathVariable String compName,
-            @PathVariable String tagName) {
+            @PathVariable String tagName) throws Exception {
         Map<String, Object> returnMap = new LinkedHashMap<>();
 
         //공통 헤더 체크
         if (!requestLanguage.isEmpty()) {
             List<CompanyEntity> ceList = new ArrayList<>();
-
-            try {
-                ceList = companyService.searchComp("equals", compName);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            ceList = companyService.searchComp("equals", compName);
 
             CompanyEntity ce = ceList.get(0);
             Set<String> sets = new LinkedHashSet<>(Arrays.asList(ce.getTag().split("\\|")));
@@ -222,17 +176,10 @@ public class CompanyController {
             sets.remove(tagName);
             String tagString = companyService.convertSetsToTag(sets);
             ce.setTag(tagString);
-
-            try {
-                ce = companyService.addComp(ce);
-                if(!ObjectUtils.isEmpty(ce.getCompanyExtendEntity())) {
-                    ce.getCompanyExtendEntity().setCompSeq(ce.getSeq());
-                    companyService.addCompExt(ce);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(null);
+            ce = companyService.addComp(ce);
+            if(!ObjectUtils.isEmpty(ce.getCompanyExtendEntity())) {
+                ce.getCompanyExtendEntity().setCompSeq(ce.getSeq());
+                companyService.addCompExt(ce);
             }
 
             //리턴 리스폰스

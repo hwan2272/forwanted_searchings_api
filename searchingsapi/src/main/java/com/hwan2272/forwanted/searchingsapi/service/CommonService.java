@@ -76,14 +76,14 @@ public class CommonService {
 
     public List<CompanyEntity> searchTagCondition(String query) throws Exception {
         List<CompanyEntity> ceList = (List) companyDataRepository.findCompByTagContaining(query);
-        List<CompanyEntity> ceList2 = new ArrayList<>();
+        List<CompanyEntity> ceCorrectTagList = new ArrayList<>();
 
         for(CompanyEntity ce : ceList) {
             String[] tags = ce.getTag().split("\\|");
 
             for(String tag : tags) {
                 if (tag.equals(query)) {
-                    ceList2.add(ce);
+                    ceCorrectTagList.add(ce);
                 }
                 else {
                     continue;
@@ -91,6 +91,6 @@ public class CommonService {
             }
         }
 
-        return  ceList2;
+        return  ceCorrectTagList;
     }
 }

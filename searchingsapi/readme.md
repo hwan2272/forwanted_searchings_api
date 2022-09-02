@@ -114,6 +114,7 @@
 
 ### [company_name은 경우에 따라 null 일 수 있으나 반드시 한 language에서 사용함]
 => DB 칼럼 설정때 null허용이 들어가야함
+=> null 보다는 '' 값이었으므로 company_ko, company_en, company_ja 를 한번에 묶어 unique key 처리함
 
 ### [x-wanted-language가 request에 항상 들어옴]
 => request 들어올시 header를 체크해야 하며, (header에 해당 키가 없을 시도 생각해주어야 할것 같은데 이 경우에는 language를 ko로 default하게 세팅, 개인적으로 optional하게 추가)
@@ -147,6 +148,26 @@
 
 ### [POST, PUT, DELETE api들도 처리후 결과를 return해서 보여주어야 함]
 => request body를 들고 있다가 return해줄때 response로 넣어주어야 함
+
+### [태그의 특징은 짝이 항상 맞다는 것 (태그 삭제 동작시에도 나란히 지워짐)]
+=> 테이블에서 tag_en, tag_ja 칼럼을 삭제하고 tag_ko로만 로직 동작하며 헤더의 랭기지 설정에 따라 en과 ja/jp는 다르게 보여지도록 함
+
+=> lang이 ko 일때 = 태그_1
+
+=> lang이 en 일때 = tag_1
+
+=> lang이 ja/jp 일때 = タグ_1
+
+=> 이를 제어하기 위하여 Enum으로 language를 생성해두고 때에 따라 replace를 적용함 (LanguageEnum 클래스)
+
+### [그러나 en, ja가 아닌 경우에는 복잡해짐]
+=> 이를 처리하기 위하여 테이블 comp_ext를 두고 유동적으로 저장할수 있도록 추가함
+
+### [태그는 중복을 허용하지 않음]
+=> 이를 처리하기 위한 Set 클래스의 사용
+
+### [서비스단 에러 케이스 일괄적으로 처리]
+=> Exception 발생시 throw하여 최종적으로 GlobalExceptionHandler 클래스가 받아 404 리턴시킴
 
 ---------------
 # 구축순서
