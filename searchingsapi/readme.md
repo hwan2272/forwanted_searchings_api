@@ -106,6 +106,7 @@
    headers=[("x-wanted-language", "en")],
    )
 
+---------------
 # 요구사항 분석에 따른 설계
 
 ### [주로 사용되는 데이터]
@@ -139,7 +140,7 @@
 => mariadb 사용
 
 ### ["(시니어)서버팀 과제.pdf" 에서 "database table 갯수는 제한없습니다." 라는 문구가 있음]
- => 테이블이 꼭 1개일 필요는 없음. company 정보와 tag 정보를 나누어 설계
+ => 테이블이 꼭 1개일 필요는 없다고 판단. company 정보와 tag 정보를 나누어 설계. language테이블과 join하는 식으로 구상함
 
 ### ["(시니어)서버팀 과제.pdf" 에서 "Docker로 개발하면 가산점이 있습니다." 라는 문구가 있음]
 => 개발후 시간 남을시 docker화 예정
@@ -147,6 +148,6 @@
 ### [POST, PUT, DELETE api들도 처리후 결과를 return해서 보여주어야 함]
 => request body를 들고 있다가 return해줄때 response로 넣어주어야 함
 
-
+---------------
 # 구축순서
 * TestControllerTest 클래스에서 TDD를 해가며 완료후 본패키지로 이동 방식 적용
