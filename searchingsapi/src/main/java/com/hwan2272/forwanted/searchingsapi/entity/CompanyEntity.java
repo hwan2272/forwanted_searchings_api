@@ -10,7 +10,7 @@ import javax.persistence.*;
 public class CompanyEntity {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer seq;
 
     @Column(name="company_ko", nullable = true, length = 50)
