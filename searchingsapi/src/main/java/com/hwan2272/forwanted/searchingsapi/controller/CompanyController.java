@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -88,9 +89,12 @@ public class CompanyController {
         //공통 헤더 체크
         if (!requestLanguage.isEmpty()) {
             CompanyEntity ce = companyService.convertRequestVOToCompEntity(reqVO);
-
             try {
-                companyService.addComp(ce);
+                ce = companyService.addComp(ce);
+                if(!ObjectUtils.isEmpty(ce.getCompanyExtendEntity())) {
+                    ce.getCompanyExtendEntity().setCompSeq(ce.getSeq());
+                    companyService.addCompExt(ce);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -98,9 +102,8 @@ public class CompanyController {
             }
 
             //리턴 리스폰스
-            //리스폰스 요구에 맞게 수정 필요
-            //List<ResponseVO> resList =  companyService.convertCompEntityToResponseVO(requestLanguage, ceList);
-            returnMap.put("companies", ce);
+            List<ResponseVO> resList =  companyService.convertCompEntityToResponseVO(requestLanguage, ce);
+            returnMap.put("companies", resList);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(returnMap);
         }
@@ -120,11 +123,6 @@ public class CompanyController {
             List<CompanyEntity> ceList = new ArrayList<>();
 
             try {
-                //언어에 따라 바꿔주는 로직 추가
-                query = query
-                        .replaceAll(LanguageEnum.tagEn.getName(), LanguageEnum.tagKo.getName())
-                        .replaceAll(LanguageEnum.tagJa.getName(), LanguageEnum.tagKo.getName());
-
                 ceList = companyService.searchTag(query);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -173,18 +171,16 @@ public class CompanyController {
 
             CompanyEntity convertCe = companyService.convertTagRequestVOToCompEntity(tagReqList);
             Set<String> reqTagAddSets = new LinkedHashSet<>(Arrays.asList(convertCe.getTag().split("\\|")));
-
             sets.addAll(reqTagAddSets);
 
-            String tagString = sets.toString();
-            tagString = tagString.replaceAll(", ", "|")
-                    .replaceAll("\\[", "")
-                    .replaceAll("]", "")
-                    .trim();
-
+            String tagString = companyService.convertSetsToTag(sets);
             ce.setTag(tagString);
             try {
-                companyService.addComp(ce);
+                ce = companyService.addComp(ce);
+                if(!ObjectUtils.isEmpty(ce.getCompanyExtendEntity())) {
+                    ce.getCompanyExtendEntity().setCompSeq(ce.getSeq());
+                    companyService.addCompExt(ce);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -192,8 +188,7 @@ public class CompanyController {
             }
 
             //리턴 리스폰스
-            //정렬? 고민
-            List<ResponseVO> resList =  companyService.convertCompEntityToResponseVO(requestLanguage, ceList);
+            List<ResponseVO> resList =  companyService.convertCompEntityToResponseVO(requestLanguage, ce);
             returnMap.put("companies", resList);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(returnMap);
@@ -223,22 +218,17 @@ public class CompanyController {
             CompanyEntity ce = ceList.get(0);
             Set<String> sets = new LinkedHashSet<>(Arrays.asList(ce.getTag().split("\\|")));
 
-            //언어에 따라 바꿔주는 로직 추가
-            tagName = tagName
-                    .replaceAll(LanguageEnum.tagEn.getName(), LanguageEnum.tagKo.getName())
-                    .replaceAll(LanguageEnum.tagJa.getName(), LanguageEnum.tagKo.getName());
-
+            tagName = companyService.replaceQuery(tagName);
             sets.remove(tagName);
-            String tagString = sets.toString();
-            tagString = tagString.replaceAll(", ", "|")
-                    .replaceAll("\\[", "")
-                    .replaceAll("]", "")
-                    .trim();
-
+            String tagString = companyService.convertSetsToTag(sets);
             ce.setTag(tagString);
 
             try {
-                companyService.addComp(ce);
+                ce = companyService.addComp(ce);
+                if(!ObjectUtils.isEmpty(ce.getCompanyExtendEntity())) {
+                    ce.getCompanyExtendEntity().setCompSeq(ce.getSeq());
+                    companyService.addCompExt(ce);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -246,7 +236,7 @@ public class CompanyController {
             }
 
             //리턴 리스폰스
-            List<ResponseVO> resList =  companyService.convertCompEntityToResponseVO(requestLanguage, ceList);
+            List<ResponseVO> resList =  companyService.convertCompEntityToResponseVO(requestLanguage, ce);
             returnMap.put("companies", resList);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(returnMap);

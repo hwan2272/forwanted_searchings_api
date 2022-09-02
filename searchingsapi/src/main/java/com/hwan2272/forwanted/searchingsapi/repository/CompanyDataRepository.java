@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 @Transactional
 public interface CompanyDataRepository extends JpaRepository<CompanyEntity, Long> {
-    public CompanyEntity findCompBySeq(Integer compSeq);
+    public CompanyEntity findCompBySeq(Integer seq);
     public CompanyEntity findCompByCompanyKo(String companyKo);
     public CompanyEntity findCompByCompanyEn(String companyEn);
     public CompanyEntity findCompByCompanyJa(String companyJa);

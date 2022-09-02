@@ -1,6 +1,7 @@
 package com.hwan2272.forwanted.searchingsapi.service;
 
 import com.hwan2272.forwanted.searchingsapi.entity.CompanyEntity;
+import com.hwan2272.forwanted.searchingsapi.entity.CompanyExtendEntity;
 import com.hwan2272.forwanted.searchingsapi.repository.CompanyDataRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,6 +10,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class CommonService {
@@ -18,6 +20,24 @@ public class CommonService {
 
     public static final String equals = "equals";
     public static final String like = "like";
+
+
+    public String replaceQuery(String query) {
+        //언어에 따라 바꿔주는 로직 추가
+        query = query
+                .replaceAll(LanguageEnum.tagEn.getName(), LanguageEnum.tagKo.getName())
+                .replaceAll(LanguageEnum.tagJa.getName(), LanguageEnum.tagKo.getName());
+        return query;
+    }
+
+    public String convertSetsToTag(Set<String> sets) {
+        String tagString = sets.toString();
+        tagString = tagString.replaceAll(", ", "|")
+                .replaceAll("\\[", "")
+                .replaceAll("]", "")
+                .trim();
+        return tagString;
+    }
 
     /*public List<CompanyEntity> searchConditions(String flag, String subFlag, String query) {
         switch (flag) {

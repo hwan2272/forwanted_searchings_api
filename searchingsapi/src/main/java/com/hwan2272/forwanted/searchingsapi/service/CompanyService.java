@@ -1,7 +1,9 @@
 package com.hwan2272.forwanted.searchingsapi.service;
 
 import com.hwan2272.forwanted.searchingsapi.entity.CompanyEntity;
+import com.hwan2272.forwanted.searchingsapi.entity.CompanyExtendEntity;
 import com.hwan2272.forwanted.searchingsapi.repository.CompanyDataRepository;
+import com.hwan2272.forwanted.searchingsapi.repository.CompanyExtendDataRepository;
 import com.hwan2272.forwanted.searchingsapi.vo.RequestVO;
 import com.hwan2272.forwanted.searchingsapi.vo.ResponseVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,9 @@ public class CompanyService extends CommonService {
 
     @Autowired
     CompanyDataRepository companyDataRepository;
+
+    @Autowired
+    CompanyExtendDataRepository companyExtendDataRepository;
 
     public List<CompanyEntity> searchComp(String subFlag, String query) throws Exception {
         List<CompanyEntity> ceList = null;
@@ -35,6 +40,8 @@ public class CompanyService extends CommonService {
     }
 
     public List<CompanyEntity> searchTag(String query) throws Exception {
+        query = replaceQuery(query);
+
         List<CompanyEntity> ceList = searchTagCondition(query);
         if(ceList.isEmpty() || ceList.get(0).getSeq() < 0) {
             throw  new Exception();
@@ -45,6 +52,18 @@ public class CompanyService extends CommonService {
     public CompanyEntity addComp(CompanyEntity ce) throws Exception {
         companyDataRepository.save(ce);
         return ce;
+    }
+
+    public CompanyEntity addCompExt(CompanyEntity ce) throws Exception {
+        companyExtendDataRepository.save(ce.getCompanyExtendEntity());
+        return ce;
+    }
+
+    public List<ResponseVO> convertCompEntityToResponseVO(
+            String requestLanguage, CompanyEntity ce) {
+        List<CompanyEntity> ceList = new ArrayList<>();
+        ceList.add(ce);
+        return this.convertCompEntityToResponseVO(requestLanguage, ceList);
     }
 
     public List<ResponseVO> convertCompEntityToResponseVO(
@@ -73,6 +92,11 @@ public class CompanyService extends CommonService {
                                         ce.getCompanyEn() : ce.getCompanyKo() : ce.getCompanyJa());
                 resVO.setTags(Arrays.asList(ce.getTag().replaceAll(LanguageEnum.tagKo.getName(), LanguageEnum.tagJa.getName()).split("\\|")));
             }
+            else { //lang이 ko,en,ja도 아니라면 extend에서 조회
+                CompanyExtendEntity cee = companyExtendDataRepository.findCompSeqAndLang(ce.getSeq(), requestLanguage);
+                resVO.setCompany_name(cee.getCompany());
+                resVO.setTags(Arrays.asList(cee.getTag().split("\\|")));
+            }
             resList.add(resVO);
         }
         return resList;
@@ -80,6 +104,8 @@ public class CompanyService extends CommonService {
 
     public CompanyEntity convertRequestVOToCompEntity(RequestVO reqVO) {
         CompanyEntity ce = new CompanyEntity();
+        CompanyExtendEntity cee = new CompanyExtendEntity();
+
         Map<String, String> companyMap = reqVO.getCompany_name();
         if(!ObjectUtils.isEmpty(companyMap)) {
             Iterator<String> companyIter = companyMap.keySet().iterator();
@@ -88,10 +114,17 @@ public class CompanyService extends CommonService {
                 String lang = companyIter.next();
                 if (lang.equals(LanguageEnum.ko.getName())) {
                     ce.setCompanyKo(companyMap.get(lang));
-                } else if (lang.equals(LanguageEnum.en.getName())) {
+                }
+                else if (lang.equals(LanguageEnum.en.getName())) {
                     ce.setCompanyEn(companyMap.get(lang));
-                } else if (lang.equals(LanguageEnum.ja.getName())) {
+                }
+                else if (lang.equals(LanguageEnum.ja.getName())) {
                     ce.setCompanyJa(companyMap.get(lang));
+                }
+                else {
+                    cee.setLang(lang);
+                    cee.setCompany(companyMap.get(lang));
+                    ce.setCompanyExtendEntity(cee);
                 }
             }
 
@@ -102,6 +135,7 @@ public class CompanyService extends CommonService {
 
         List<Map<String, Map<String, String>>> tagsList = reqVO.getTags();
         Set<String> tagSets = new LinkedHashSet<>();
+        Set<String> tagEtcSets = new LinkedHashSet<>();
         for(int i=0; i<tagsList.size(); i++) {
             Map tagMap =  tagsList.get(i).get("tag_name");
             Iterator<String> tagIter = tagMap.keySet().iterator();
@@ -110,26 +144,30 @@ public class CompanyService extends CommonService {
                 if (lang.equals(LanguageEnum.ko.getName()) || lang.equals(LanguageEnum.en.getName()) || lang.equals(LanguageEnum.ja.getName())) {
                     if (lang.equals(LanguageEnum.ko.getName())) {
                         tagSets.add(tagMap.get(lang).toString());
+
+                        String tagString = convertSetsToTag(tagSets);
+                        ce.setTag(tagString);
                     }
-                } else { //확장
-                    //ce.setTag(companyMap.get(lang));
+                } else { //lang이 ko,en,ja도 아니라면 extend에 save
+                    cee.setLang(lang);
+                    tagEtcSets.add(tagMap.get(lang).toString());
+
+                    String tagString = convertSetsToTag(tagEtcSets);
+                    cee.setTag(tagString);
+                    ce.setCompanyExtendEntity(cee);
                 }
             }
         }
 
-        String tagString = tagSets.toString();
-        tagString = tagString.replaceAll(", ", "|")
-                .replaceAll("\\[", "")
-                .replaceAll("]", "")
-                .trim();
-
-        ce.setTag(tagString);
         return ce;
     }
 
     public CompanyEntity convertTagRequestVOToCompEntity(List<Map<String, Map<String, String>>> reqList) {
         CompanyEntity ce = new CompanyEntity();
+        CompanyExtendEntity cee = new CompanyExtendEntity();
+
         Set<String> tagSets = new LinkedHashSet<>();
+        Set<String> tagEtcSets = new LinkedHashSet<>();
         for(int i=0; i<reqList.size(); i++) {
             Map tagMap =  reqList.get(i).get("tag_name");
             Iterator<String> tagIter = tagMap.keySet().iterator();
@@ -138,20 +176,21 @@ public class CompanyService extends CommonService {
                 if (lang.equals(LanguageEnum.ko.getName()) || lang.equals(LanguageEnum.en.getName()) || lang.equals(LanguageEnum.ja.getName())) {
                     if (lang.equals(LanguageEnum.ko.getName())) {
                         tagSets.add(tagMap.get(lang).toString());
+
+                        String tagString = convertSetsToTag(tagSets);
+                        ce.setTag(tagString);
                     }
-                } else { //확장
-                    //ce.setTag(companyMap.get(lang));
+                } else { //lang이 ko,en,ja도 아니라면 extend에 save
+                    cee.setLang(lang);
+                    tagEtcSets.add(tagMap.get(lang).toString());
+
+                    String tagString = convertSetsToTag(tagEtcSets);
+                    cee.setTag(tagString);
+                    ce.setCompanyExtendEntity(cee);
                 }
             }
         }
 
-        String tagString = tagSets.toString();
-        tagString = tagString.replaceAll(", ", "|")
-                .replaceAll("\\[", "")
-                .replaceAll("]", "")
-                .trim();
-
-        ce.setTag(tagString);
         return ce;
     }
 
