@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.hwan2272.forwanted</groupId>
-	<artifactId>searchingsapi</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>searchingsapi</name>
-	<description>searchingsapi hwan2272</description>
+	<artifactId>searchingsApi</artifactId>
+	<version>1.0</version>
+	<name>searchingsApi</name>
+	<description>searchingsApi hwan2272</description>
 	<properties>
 		<java.version>1.8</java.version>
 	</properties>

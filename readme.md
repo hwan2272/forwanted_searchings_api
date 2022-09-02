@@ -143,7 +143,7 @@
  => 테이블이 꼭 1개일 필요는 없다고 판단. company 정보와 tag 정보를 나누어 설계. language테이블과 join하는 식으로 구상함
 
 ### ["(시니어)서버팀 과제.pdf" 에서 "Docker로 개발하면 가산점이 있습니다." 라는 문구가 있음]
-=> 개발후 시간 남을시 docker화 예정
+=> docker 이미지화 완료 (docker pull hwan2272/searchings-api:1.0)
 
 ### [POST, PUT, DELETE api들도 처리후 결과를 return해서 보여주어야 함]
 => request body를 들고 있다가 return해줄때 response로 넣어주어야 함
