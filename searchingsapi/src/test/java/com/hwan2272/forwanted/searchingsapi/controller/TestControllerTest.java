@@ -3,6 +3,8 @@ package com.hwan2272.forwanted.searchingsapi.controller;
 import com.hwan2272.forwanted.searchingsapi.entity.CompanyEntity;
 import com.hwan2272.forwanted.searchingsapi.repository.CompanyDataRepository;
 import com.hwan2272.forwanted.searchingsapi.service.CompanyService;
+import com.hwan2272.forwanted.searchingsapi.service.LanguageEnum;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -10,14 +12,14 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Slf4j
 class TestControllerTest {
 
     @Autowired
@@ -29,8 +31,7 @@ class TestControllerTest {
     @Test
     @Order(1)
     public void test_company_name_autocomplete() {
-        System.out.println("[GET] /search?query={검색어}");
-        //List<CompanyEntity> ceList = (List) companyDataRepository.findCompByCompanyKoContaining("링크");
+        log.info("[GET] /search?query={검색어}");
         List<CompanyEntity> ceList = new ArrayList<>();
 
         try {
@@ -42,7 +43,7 @@ class TestControllerTest {
 
 
         for(CompanyEntity ce : ceList) {
-            System.out.println(ce.toString());
+            log.info(ce.toString());
         }
 
     }
@@ -50,8 +51,7 @@ class TestControllerTest {
     @Test
     @Order(2)
     public void test_company_search() {
-        System.out.println("[GET] /companies/{회사명}");
-        //CompanyEntity ce = companyDataRepository.findCompByCompanyEn("Wantedlab");
+        log.info("[GET] /companies/{회사명}");
         List<CompanyEntity> ceList = new ArrayList<>();
 
         try {
@@ -60,106 +60,134 @@ class TestControllerTest {
         catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(ceList.get(0).toString());
+        log.info(ceList.get(0).toString());
 
     }
 
     @Test
     @Order(3)
     public void test_new_company() {
-        System.out.println("[POST] /companies");
+        log.info("[POST] /companies");
 
         CompanyEntity ce = new CompanyEntity();
         ce.setCompanyKo("라인 프레쉬");
         ce.setCompanyEn("LINE FRESH");
         ce.setCompanyJa("");
 
-        ce.setTagKo("태그_1|태그_8|태그_15");
-        ce.setTagEn("tag_1|tag_8|tag_15");
+        ce.setTag("태그_1|태그_8|태그_15");
         try {
             companyService.addComp(ce);
         }
         catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(ce.toString());
+        log.info(ce.toString());
 
     }
 
     @Test
     @Order(4)
     public void test_search_tag_name() {
-        System.out.println("[GET] /tags?query={검색어}");
+        log.info("[GET] /tags?query={검색어}");
         //List<CompanyEntity> ceList = (List) companyDataRepository.findCompByTagJaContaining("タグ_6");
         List<CompanyEntity> ceList = new ArrayList<>();
 
         try {
-            ceList = companyService.searchTag("タグ_22");
+            String query = "タグ_22";
+            //String query = "tag_22";
+            //언어에 따라 바꿔주는 로직 추가
+            query = query
+                    .replaceAll(LanguageEnum.tagEn.getName(), LanguageEnum.tagKo.getName())
+                    .replaceAll(LanguageEnum.tagJa.getName(), LanguageEnum.tagKo.getName());
+
+            log.info(":::::" + query);
+            ceList = companyService.searchTag(query);
         }
         catch (Exception e) {
             e.printStackTrace();
         }
 
         for(CompanyEntity newCe : ceList) {
-            System.out.println(newCe.toString());
+            log.info(newCe.toString());
         }
     }
 
     @Test
     @Order(5)
     public void test_new_tag() {
-        System.out.println("[PUT] /companies/{회사명}/tags");
+        log.info("[PUT] /companies/{회사명}/tags");
+        String compName = "원티드랩";
 
         List<CompanyEntity> ceList = new ArrayList<>();
 
         try {
-            ceList = companyService.searchComp("equals", "원티드랩");
+            ceList = companyService.searchComp("equals", compName);
         }
         catch (Exception e) {
             e.printStackTrace();
         }
 
         CompanyEntity ce = ceList.get(0);
-        //ce.setSeq(ceList.get(0).getSeq());
-        //ce.setCompanyKo("원티드랩");
+        Set<String> sets = new LinkedHashSet<>(Arrays.asList(ce.getTag().split("\\|")));
+        sets.add("태그_50");
+        sets.add("태그_4");
 
-        ce.setTagKo(ceList.get(0).getTagKo() + "|태그_50|태그_4");
-        ce.setTagEn(ceList.get(0).getTagEn() + "|tag_50|tag_4");
-        ce.setTagJa(ceList.get(0).getTagJa() + "|タグ_50|タグ_4");
+        String tagString = sets.toString();
+        tagString = tagString.replaceAll(", ", "|")
+                .replaceAll("\\[", "")
+                .replaceAll("]", "")
+                .trim();
+
+        ce.setTag(tagString);
         try {
             companyService.addComp(ce);
         }
         catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(ce.toString());
+        log.info(ce.toString());
     }
 
     @Test
     @Order(6)
     public void test_delete_tag() {
-        System.out.println("[DELETE] /companies/{회사명}/tags/{태그명}");
+        log.info("[DELETE] /companies/{회사명}/tags/{태그명}");
+        String compName = "원티드랩";
+        String tag = "태그_16";
 
         List<CompanyEntity> ceList = new ArrayList<>();
 
         try {
-            ceList = companyService.searchComp("equals", "원티드랩");
+            ceList = companyService.searchComp("equals", compName);
         }
         catch (Exception e) {
             e.printStackTrace();
         }
 
         CompanyEntity ce = ceList.get(0);
-        //ce.setSeq(ceList.get(0).getSeq());
-        //ce.setCompanyKo("원티드랩");
+        Set<String> sets = new LinkedHashSet<>(Arrays.asList(ce.getTag().split("\\|")));
 
-        ce.setTagKo(ceList.get(0).getTagKo().replaceAll("태그_16", ""));
+        //언어에 따라 바꿔주는 로직 추가
+        tag = tag
+                .replaceAll(LanguageEnum.tagEn.getName(), LanguageEnum.tagKo.getName())
+                .replaceAll(LanguageEnum.tagJa.getName(), LanguageEnum.tagKo.getName());
+
+        sets.remove(tag);
+        String tagString = sets.toString();
+        tagString = tagString.replaceAll(", ", "|")
+                .replaceAll("\\[", "")
+                .replaceAll("]", "")
+                .trim();
+
+        log.info(tagString.toString());
+        ce.setTag(tagString);
+
         try {
             companyService.addComp(ce);
         }
         catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(ce.toString());
+        log.info(ce.toString());
     }
 }

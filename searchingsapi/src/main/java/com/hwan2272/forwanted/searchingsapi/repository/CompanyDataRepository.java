@@ -21,8 +21,8 @@ public interface CompanyDataRepository extends JpaRepository<CompanyEntity, Long
     public Iterable<CompanyEntity> findCompByCompanyJaContaining(String companyJa);
 
     //// tagName Search
-    public Iterable<CompanyEntity> findCompByTagKoContaining(String companyKo);
-    public Iterable<CompanyEntity> findCompByTagEnContaining(String companyEn);
-    public Iterable<CompanyEntity> findCompByTagJaContaining(String companyJa);
+    public Iterable<CompanyEntity> findCompByTagContaining(String tag);
+    /*public Iterable<CompanyEntity> findCompByTagEnContaining(String tagEn);
+    public Iterable<CompanyEntity> findCompByTagJaContaining(String tagJa);*/
 
 }

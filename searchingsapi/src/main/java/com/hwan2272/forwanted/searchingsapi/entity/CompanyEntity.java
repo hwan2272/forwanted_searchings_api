@@ -22,12 +22,12 @@ public class CompanyEntity {
     @Column(name="company_ja", nullable = true, length = 50)
     private String companyJa;
 
-    @Column(name="tag_ko", nullable = true, length = 100)
-    private String tagKo;
+    @Column(name="tag", nullable = true, length = 100)
+    private String tag;
 
-    @Column(name="tag_en", nullable = true, length = 100)
+    /*@Column(name="tag_en", nullable = true, length = 100)
     private String tagEn;
 
     @Column(name="tag_ja", nullable = true, length = 100)
-    private String tagJa;
+    private String tagJa;*/
 }

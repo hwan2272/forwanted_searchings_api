@@ -18,9 +18,6 @@ public class CommonService {
 
     public static final String equals = "equals";
     public static final String like = "like";
-    public static final String ko = "ko";
-    public static final String en = "en";
-    public static final String ja = "ja";
 
     /*public List<CompanyEntity> searchConditions(String flag, String subFlag, String query) {
         switch (flag) {
@@ -58,24 +55,11 @@ public class CommonService {
     }
 
     public List<CompanyEntity> searchTagCondition(String query) throws Exception {
-        String lang = ko;
-        List<CompanyEntity> ceList = (List) companyDataRepository.findCompByTagKoContaining(query);
-        if(ObjectUtils.isEmpty(ceList) || ceList.get(0).getSeq() <= 0) {
-            lang = en;
-            ceList = (List) companyDataRepository.findCompByTagEnContaining(query);
-        }
-        if(ObjectUtils.isEmpty(ceList) || ceList.get(0).getSeq() <= 0) {
-            lang = ja;
-            ceList = (List) companyDataRepository.findCompByTagJaContaining(query);
-        }
-
+        List<CompanyEntity> ceList = (List) companyDataRepository.findCompByTagContaining(query);
         List<CompanyEntity> ceList2 = new ArrayList<>();
 
         for(CompanyEntity ce : ceList) {
-            String[] tags = null;
-            if(lang.equals(ko)) tags = ce.getTagKo().split("\\|");
-            if(lang.equals(en)) tags = ce.getTagEn().split("\\|");
-            if(lang.equals(ja)) tags = ce.getTagJa().split("\\|");
+            String[] tags = ce.getTag().split("\\|");
 
             for(String tag : tags) {
                 if (tag.equals(query)) {
