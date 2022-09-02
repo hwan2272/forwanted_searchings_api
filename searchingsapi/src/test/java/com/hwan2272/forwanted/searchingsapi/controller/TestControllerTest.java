@@ -5,189 +5,193 @@ import com.hwan2272.forwanted.searchingsapi.repository.CompanyDataRepository;
 import com.hwan2272.forwanted.searchingsapi.service.CompanyService;
 import com.hwan2272.forwanted.searchingsapi.service.LanguageEnum;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.*;
-import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Slf4j
+@AutoConfigureMockMvc
 class TestControllerTest {
 
-    @Autowired
-    CompanyDataRepository companyDataRepository;
+    private MockMvc mockMvc;
 
     @Autowired
-    CompanyService companyService;
+    public void setMockMvc(MockMvc mockMvc) {
+        this.mockMvc = mockMvc;
+    }
 
     @Test
     @Order(1)
-    public void test_company_name_autocomplete() {
-        log.info("[GET] /search?query={검색어}");
-        List<CompanyEntity> ceList = new ArrayList<>();
+    @DisplayName("[GET] /search?query={검색어}")
+    public void test_company_name_autocomplete() throws Exception {
+        ResultActions result = mockMvc.perform(
+                get("/search?query=링크")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("x-wanted-language", "ko")
+        );
 
-        try {
-            ceList = companyService.searchComp("like", "링크");
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
-        for(CompanyEntity ce : ceList) {
-            log.info(ce.toString());
-        }
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.companies.[0].company_name", is("주식회사 링크드코리아")))
+                .andExpect(jsonPath("$.companies.[1].company_name", is("스피링크")));
 
     }
 
     @Test
     @Order(2)
-    public void test_company_search() {
-        log.info("[GET] /companies/{회사명}");
-        List<CompanyEntity> ceList = new ArrayList<>();
+    @DisplayName("[GET] /companies/{회사명}")
+    public void test_company_search() throws Exception {
+        ResultActions result = mockMvc.perform(
+                get("/companies/Wantedlab")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("x-wanted-language", "ko")
+        );
 
-        try {
-            ceList = companyService.searchComp("equals", "Wantedlab");
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        log.info(ceList.get(0).toString());
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.companies.[0].company_name", is("원티드랩")))
+                .andExpect(jsonPath("$.companies.[0].tags[0]", is("태그_4")));
+
+        result = mockMvc.perform(
+                get("/companies/없는회사")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("x-wanted-language", "ko")
+        );
+
+        result.andExpect(status().is4xxClientError())
+                .andExpect(status().isNotFound());
+
 
     }
 
     @Test
     @Order(3)
-    public void test_new_company() {
-        log.info("[POST] /companies");
+    @DisplayName("[POST] /companies")
+    public void test_new_company() throws Exception {
+        ResultActions result = mockMvc.perform(
+                post("/companies")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("x-wanted-language", "tw")
+                        .content("{\n" +
+                                "    \"company_name\": {\n" +
+                                "        \"ko\": \"라인 프레쉬\",\n" +
+                                "        \"tw\": \"LINE FRESH\",\n" +
+                                "        \"en\": \"LINE FRESH\"\n" +
+                                "    },\n" +
+                                "    \"tags\": [\n" +
+                                "        {\n" +
+                                "            \"tag_name\": {\n" +
+                                "                \"ko\": \"태그_1\",\n" +
+                                "                \"tw\": \"tag_1\",\n" +
+                                "                \"en\": \"tag_1\"\n" +
+                                "            }\n" +
+                                "        },\n" +
+                                "        {\n" +
+                                "            \"tag_name\": {\n" +
+                                "                \"ko\": \"태그_8\",\n" +
+                                "                \"tw\": \"tag_8\",\n" +
+                                "                \"en\": \"tag_8\"\n" +
+                                "            }\n" +
+                                "        },\n" +
+                                "        {\n" +
+                                "            \"tag_name\": {\n" +
+                                "                \"ko\": \"태그_15\",\n" +
+                                "                \"tw\": \"tag_15\",\n" +
+                                "                \"en\": \"tag_15\"\n" +
+                                "            }\n" +
+                                "        }\n" +
+                                "    ]\n" +
+                                "}")
+        );
 
-        CompanyEntity ce = new CompanyEntity();
-        ce.setCompanyKo("라인 프레쉬");
-        ce.setCompanyEn("LINE FRESH");
-        ce.setCompanyJa("");
-
-        ce.setTag("태그_1|태그_8|태그_15");
-        try {
-            companyService.addComp(ce);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        log.info(ce.toString());
-
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.companies.[0].company_name", is("LINE FRESH")))
+                .andExpect(jsonPath("$.companies.[0].tags[0]", is("tag_1")));
     }
 
     @Test
     @Order(4)
-    public void test_search_tag_name() {
-        log.info("[GET] /tags?query={검색어}");
-        //List<CompanyEntity> ceList = (List) companyDataRepository.findCompByTagJaContaining("タグ_6");
-        List<CompanyEntity> ceList = new ArrayList<>();
+    @DisplayName("[GET] /tags?query={검색어}")
+    public void test_search_tag_name() throws Exception {
+        ResultActions result = mockMvc.perform(
+                get("/tags?query=タグ_22")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("x-wanted-language", "ko")
+        );
 
-        try {
-            String query = "タグ_22";
-            //String query = "tag_22";
-            //언어에 따라 바꿔주는 로직 추가
-            query = query
-                    .replaceAll(LanguageEnum.tagEn.getName(), LanguageEnum.tagKo.getName())
-                    .replaceAll(LanguageEnum.tagJa.getName(), LanguageEnum.tagKo.getName());
-
-            log.info(":::::" + query);
-            ceList = companyService.searchTag(query);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        for(CompanyEntity newCe : ceList) {
-            log.info(newCe.toString());
-        }
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.companies.[0].company_name", is("딤딤섬 대구점")))
+                .andExpect(jsonPath("$.companies.[1].company_name", is("마이셀럽스")))
+                .andExpect(jsonPath("$.companies.[2].company_name", is("Rejoice Pregnancy")))
+                .andExpect(jsonPath("$.companies.[3].company_name", is("삼일제약")))
+                .andExpect(jsonPath("$.companies.[4].company_name", is("투게더앱스")));
     }
 
     @Test
     @Order(5)
-    public void test_new_tag() {
-        log.info("[PUT] /companies/{회사명}/tags");
-        String compName = "원티드랩";
+    @DisplayName("[PUT] /companies/{회사명}/tags")
+    public void test_new_tag() throws Exception {
+        ResultActions result = mockMvc.perform(
+                put("/companies/원티드랩/tags")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("x-wanted-language", "en")
+                        .content("[\n" +
+                                "    {\n" +
+                                "        \"tag_name\": {\n" +
+                                "            \"ko\": \"태그_50\",\n" +
+                                "            \"jp\": \"タグ_50\",\n" +
+                                "            \"en\": \"tag_50\"\n" +
+                                "        }\n" +
+                                "    },\n" +
+                                "    {\n" +
+                                "        \"tag_name\": {\n" +
+                                "            \"ko\": \"태그_4\",\n" +
+                                "            \"tw\": \"tag_4\",\n" +
+                                "            \"en\": \"tag_4\"\n" +
+                                "        }\n" +
+                                "    }\n" +
+                                "]")
+        );
 
-        List<CompanyEntity> ceList = new ArrayList<>();
-
-        try {
-            ceList = companyService.searchComp("equals", compName);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        CompanyEntity ce = ceList.get(0);
-        Set<String> sets = new LinkedHashSet<>(Arrays.asList(ce.getTag().split("\\|")));
-        sets.add("태그_50");
-        sets.add("태그_4");
-
-        String tagString = sets.toString();
-        tagString = tagString.replaceAll(", ", "|")
-                .replaceAll("\\[", "")
-                .replaceAll("]", "")
-                .trim();
-
-        ce.setTag(tagString);
-        try {
-            companyService.addComp(ce);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        log.info(ce.toString());
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.companies.[0].company_name", is("Wantedlab")))
+                .andExpect(jsonPath("$.companies.[0].tags[0]", is("tag_4")));
     }
 
     @Test
     @Order(6)
-    public void test_delete_tag() {
-        log.info("[DELETE] /companies/{회사명}/tags/{태그명}");
-        String compName = "원티드랩";
-        String tag = "태그_16";
+    @DisplayName("[DELETE] /companies/{회사명}/tags/{태그명}")
+    public void test_delete_tag() throws Exception {
+        ResultActions result = mockMvc.perform(
+                delete("/companies/원티드랩/tags/태그_16")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("x-wanted-language", "en")
+        );
 
-        List<CompanyEntity> ceList = new ArrayList<>();
-
-        try {
-            ceList = companyService.searchComp("equals", compName);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        CompanyEntity ce = ceList.get(0);
-        Set<String> sets = new LinkedHashSet<>(Arrays.asList(ce.getTag().split("\\|")));
-
-        //언어에 따라 바꿔주는 로직 추가
-        tag = tag
-                .replaceAll(LanguageEnum.tagEn.getName(), LanguageEnum.tagKo.getName())
-                .replaceAll(LanguageEnum.tagJa.getName(), LanguageEnum.tagKo.getName());
-
-        sets.remove(tag);
-        String tagString = sets.toString();
-        tagString = tagString.replaceAll(", ", "|")
-                .replaceAll("\\[", "")
-                .replaceAll("]", "")
-                .trim();
-
-        log.info(tagString.toString());
-        ce.setTag(tagString);
-
-        try {
-            companyService.addComp(ce);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        log.info(ce.toString());
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.companies.[0].company_name", is("Wantedlab")))
+                .andExpect(jsonPath("$.companies.[0].tags[0]", is("tag_4")))
+                .andExpect(jsonPath("$.companies.[0].tags[1]", is("tag_20")))
+                .andExpect(jsonPath("$.companies.[0].tags[2]", is("tag_50")));
     }
 }
