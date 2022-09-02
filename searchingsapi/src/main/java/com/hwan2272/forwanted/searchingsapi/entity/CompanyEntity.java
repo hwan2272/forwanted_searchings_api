@@ -3,6 +3,7 @@ package com.hwan2272.forwanted.searchingsapi.entity;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -32,7 +33,7 @@ public class CompanyEntity {
     @Column(name="tag_ja", nullable = true, length = 100)
     private String tagJa;*/
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "seq")
-    private CompanyExtendEntity companyExtendEntity;
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "compSeq")
+    private List<CompanyExtendEntity> companyExtendEntity = new ArrayList<>();
 }

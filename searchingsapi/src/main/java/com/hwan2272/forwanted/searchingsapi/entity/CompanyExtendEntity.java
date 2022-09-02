@@ -13,7 +13,7 @@ public class CompanyExtendEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer seq;
 
-    @JoinColumn(name = "comp_seq", nullable = false)
+    @JoinColumn(name = "comp_seq", nullable = false, updatable = false)
     private Integer compSeq;
 
     @Column(nullable = true, length = 2)
@@ -24,8 +24,5 @@ public class CompanyExtendEntity {
 
     @Column(nullable = true, length = 100)
     private String tag;
-
-    //@OneToOne(cascade = CascadeType.ALL)
-    //private CompanyEntity companyEntity;
 
 }

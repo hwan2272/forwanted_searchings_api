@@ -55,7 +55,10 @@ public class CompanyService extends CommonService {
     }
 
     public CompanyEntity addCompExt(CompanyEntity ce) throws Exception {
-        companyExtendDataRepository.save(ce.getCompanyExtendEntity());
+        List<CompanyExtendEntity> ceeList = ce.getCompanyExtendEntity();
+        for (CompanyExtendEntity cee : ceeList) {
+            companyExtendDataRepository.save(cee);
+        }
         return ce;
     }
 
@@ -104,6 +107,7 @@ public class CompanyService extends CommonService {
 
     public CompanyEntity convertRequestVOToCompEntity(RequestVO reqVO) throws Exception {
         CompanyEntity ce = new CompanyEntity();
+        List<CompanyExtendEntity> ceeList = new ArrayList<>();
         CompanyExtendEntity cee = new CompanyExtendEntity();
 
         Map<String, String> companyMap = reqVO.getCompany_name();
@@ -124,7 +128,6 @@ public class CompanyService extends CommonService {
                 else {
                     cee.setLang(lang);
                     cee.setCompany(companyMap.get(lang));
-                    ce.setCompanyExtendEntity(cee);
                 }
             }
 
@@ -157,7 +160,8 @@ public class CompanyService extends CommonService {
 
                     String tagString = convertSetsToTag(tagEtcSets);
                     cee.setTag(tagString);
-                    ce.setCompanyExtendEntity(cee);
+                    ceeList.add(cee);
+                    ce.setCompanyExtendEntity(ceeList);
                 }
             }
         }
@@ -167,6 +171,7 @@ public class CompanyService extends CommonService {
 
     public CompanyEntity convertTagRequestVOToCompEntity(List<Map<String, Map<String, String>>> reqList) throws Exception {
         CompanyEntity ce = new CompanyEntity();
+        List<CompanyExtendEntity> ceeList = new ArrayList<>();
         CompanyExtendEntity cee = new CompanyExtendEntity();
 
         Set<String> tagSets = new LinkedHashSet<>();
@@ -192,7 +197,8 @@ public class CompanyService extends CommonService {
 
                     String tagString = convertSetsToTag(tagEtcSets);
                     cee.setTag(tagString);
-                    ce.setCompanyExtendEntity(cee);
+                    ceeList.add(cee);
+                    ce.setCompanyExtendEntity(ceeList);
                 }
             }
         }

@@ -3,6 +3,7 @@ package com.hwan2272.forwanted.searchingsapi.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hwan2272.forwanted.searchingsapi.entity.CompanyEntity;
+import com.hwan2272.forwanted.searchingsapi.entity.CompanyExtendEntity;
 import com.hwan2272.forwanted.searchingsapi.service.CompanyService;
 import com.hwan2272.forwanted.searchingsapi.service.LanguageEnum;
 import com.hwan2272.forwanted.searchingsapi.vo.RequestVO;
@@ -75,7 +76,13 @@ public class CompanyController {
             CompanyEntity ce = companyService.convertRequestVOToCompEntity(reqVO);
             ce = companyService.addComp(ce);
             if(!ObjectUtils.isEmpty(ce.getCompanyExtendEntity())) {
-                ce.getCompanyExtendEntity().setCompSeq(ce.getSeq());
+                List<CompanyExtendEntity> ceeList = ce.getCompanyExtendEntity();
+                List<CompanyExtendEntity> newCeeList = new ArrayList<>();
+                for (CompanyExtendEntity cee : ceeList) {
+                    cee.setCompSeq(ce.getSeq());
+                    newCeeList.add(cee);
+                }
+                ce.setCompanyExtendEntity(newCeeList);
                 companyService.addCompExt(ce);
             }
 
@@ -142,7 +149,13 @@ public class CompanyController {
             ce.setCompanyExtendEntity(convertCe.getCompanyExtendEntity());
             ce = companyService.addComp(ce);
             if(!ObjectUtils.isEmpty(ce.getCompanyExtendEntity())) {
-                ce.getCompanyExtendEntity().setCompSeq(ce.getSeq());
+                List<CompanyExtendEntity> ceeList = ce.getCompanyExtendEntity();
+                List<CompanyExtendEntity> newCeeList = new ArrayList<>();
+                for (CompanyExtendEntity cee : ceeList) {
+                    cee.setCompSeq(ce.getSeq());
+                    newCeeList.add(cee);
+                }
+                ce.setCompanyExtendEntity(newCeeList);
                 companyService.addCompExt(ce);
             }
 
@@ -178,7 +191,13 @@ public class CompanyController {
             ce.setTag(tagString);
             ce = companyService.addComp(ce);
             if(!ObjectUtils.isEmpty(ce.getCompanyExtendEntity())) {
-                ce.getCompanyExtendEntity().setCompSeq(ce.getSeq());
+                List<CompanyExtendEntity> ceeList = ce.getCompanyExtendEntity();
+                List<CompanyExtendEntity> newCeeList = new ArrayList<>();
+                for (CompanyExtendEntity cee : ceeList) {
+                    cee.setCompSeq(ce.getSeq());
+                    newCeeList.add(cee);
+                }
+                ce.setCompanyExtendEntity(newCeeList);
                 companyService.addCompExt(ce);
             }
 
